@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Curtain Calculator with Search & Day/Night Options</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f3f4f6; 
+            padding: 0.5rem; 
+            overflow-y: auto;
+        }
+        .main-container-group { 
+            background-color: white;
+            padding: 1rem; 
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 850px; 
+            margin-top: 1rem; 
+            margin-bottom: 1rem;
+        }
+        @media (min-width: 640px) { 
+            body {
+                padding: 1rem; 
+            }
+            .main-container-group {
+                padding: 2rem; 
+                margin-top: 2rem;
+            }
+        }
+
+        .input-label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: #374151; }
+        .input-field-container { display: flex; gap: 0.5rem; align-items: center; }
+        .input-field, .room-name-input, .client-info-input, .material-code-input, .material-manage-input, .curtain-detail-input, .price-input, .search-input { /* Added .search-input */
+            flex-grow: 1; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem;
+            box-sizing: border-box; transition: border-color 0.3s; min-width: 0;
+            font-size: 0.875rem; 
+        }
+        @media (min-width: 640px) { 
+             .input-field, .room-name-input, .client-info-input, .material-code-input, .material-manage-input, .curtain-detail-input, .price-input, .search-input {
+                font-size: 1rem; 
+            }
+        }
+
+        .curtain-detail-input.select, .curtain-detail-input.textarea {
+             height: calc(1.5em + 2 * 0.75rem + 2px); 
+        }
+        .curtain-detail-input.textarea { min-height: 70px; } 
+        .client-info-input.textarea { min-height: 80px; }
+        .unit-select {
+            padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem; background-color: white;
+            color: #374151; transition: border-color 0.3s; height: calc(1.5em + 2 * 0.75rem + 2px); 
+            font-size: 0.875rem; 
+        }
+         @media (min-width: 640px) { 
+            .unit-select { font-size: 1rem; }
+        }
+
+        .input-field:focus, .unit-select:focus, .room-name-input:focus, .client-info-input:focus, .material-code-input:focus, .material-manage-input:focus, .curtain-detail-input:focus, .price-input:focus, .search-input:focus {
+            outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+        .action-button {
+            padding: 0.75rem 1.25rem; 
+            background-color: #6366f1; color: white; font-weight: 600;
+            border: none; border-radius: 0.5rem; cursor: pointer; transition: background-color 0.3s;
+            display: inline-block;
+            font-size: 0.9rem;
+        }
+         @media (min-width: 640px) { 
+            .action-button { font-size: 1rem; padding: 0.75rem 1.5rem;}
+        }
+        .action-button:hover { background-color: #4f46e5; }
+        
+        .secondary-button, .copy-button, .manage-material-btn { 
+            padding: 0.5rem 0.875rem; 
+            background-color: #4b5563; color: white; font-size: 0.8rem; 
+            border: none; border-radius: 0.5rem; cursor: pointer; transition: background-color 0.3s;
+            margin-left: 0.25rem; 
+        }
+         @media (min-width: 640px) { 
+            .secondary-button, .copy-button, .manage-material-btn { font-size: 0.875rem; padding: 0.5rem 1rem; margin-left: 0.5rem;}
+        }
+
+        .copy-button { background-color: #10b981; }
+        .copy-button:hover { background-color: #059669; }
+        .manage-material-btn { background-color: #f59e0b; margin-left:0; margin-bottom:1rem;} 
+        .manage-material-btn:hover { background-color: #d97706; }
+
+        .remove-button, .delete-material-btn { 
+            padding: 0.4rem 0.6rem; 
+            background-color: #ef4444; color: white; font-size: 0.75rem; 
+            border: none; border-radius: 0.5rem; cursor: pointer; transition: background-color 0.3s;
+            margin-left: 0.25rem; 
+        }
+        @media (min-width: 640px) { 
+            .remove-button, .delete-material-btn { padding: 0.5rem 0.75rem; font-size: 0.875rem; margin-left: 0.5rem; }
+        }
+        .remove-button:hover, .delete-material-btn:hover { background-color: #dc2626; }
+        
+        .edit-material-btn {
+            padding: 0.4rem 0.6rem; background-color: #3b82f6; color: white; font-size: 0.75rem;
+            border: none; border-radius: 0.5rem; cursor: pointer; transition: background-color 0.3s;
+        }
+         @media (min-width: 640px) { 
+            .edit-material-btn { padding: 0.5rem 0.75rem; font-size: 0.875rem; }
+        }
+        .edit-material-btn:hover { background-color: #2563eb; }
+
+        .result-area { margin-top: 1rem; padding: 1rem; background-color: #eef2ff; border-radius: 0.5rem; border: 1px solid #c7d2fe; }
+         @media (min-width: 640px) { 
+            .result-area { padding: 1.5rem; }
+        }
+        .result-area-header { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: stretch; 
+            gap: 0.5rem; 
+            margin-bottom: 0.75rem; 
+        }
+        @media (min-width: 768px) { 
+            .result-area-header {
+                flex-direction: row; 
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+        .result-area-header h2 { margin-bottom: 0; text-align: center; }
+         @media (min-width: 768px) { 
+             .result-area-header h2 { text-align: left; }
+         }
+        .result-area-buttons { display: flex; justify-content: center; gap: 0.5rem; } 
+         @media (min-width: 768px) { 
+            .result-area-buttons { justify-content: flex-end; } 
+        }
+
+        .grand-total-text { font-size: 1.25rem; font-weight: 700; color: #312e81; margin-top: 1rem; text-align: right; }
+         @media (min-width: 640px) { 
+            .grand-total-text { font-size: 1.5rem; }
+        }
+        .item-result { padding: 0.75rem; margin-bottom: 1rem; background-color: #fff; border: 1px solid #e5e7eb; border-radius: 0.5rem; }
+         @media (min-width: 640px) { 
+            .item-result { padding: 1rem; }
+        }
+        .item-result p { margin-bottom: 0.25rem; font-size: 0.875rem; }
+         @media (min-width: 640px) { 
+            .item-result p { font-size: 1rem; }
+        }
+        .item-result .room-name-display { font-style: italic; color: #555; margin-bottom: 0.5rem;}
+        .item-result .material-code-display, .item-result .curtain-specs-display { font-size: 0.8rem; color: #6b7280; margin-top: 0.3rem;} 
+         @media (min-width: 640px) { 
+            .item-result .material-code-display, .item-result .curtain-specs-display { font-size: 0.9em; }
+        }
+
+        .remark-text { font-size: 0.8rem; font-weight: 500; color: #c2410c; }
+         @media (min-width: 640px) { 
+            .remark-text { font-size: 0.9rem; }
+        }
+        .error-message { color: #ef4444; font-size: 0.8rem; margin-top: 0.25rem; }
+         @media (min-width: 640px) { 
+            .error-message { font-size: 0.875rem; }
+        }
+        
+        .section-header { 
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+        }
+         @media (min-width: 640px) { 
+            .section-header { font-size: 1.25rem; }
+        }
+        
+        .client-details-section, .materials-management-section { 
+            margin-bottom: 1.5rem;
+            padding: 1rem; 
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            background-color: #f9fafb;
+        }
+         @media (min-width: 640px) { 
+            .client-details-section, .materials-management-section { padding: 1.5rem; }
+        }
+
+        .client-details-grid { 
+            display: grid;
+            grid-template-columns: 1fr; 
+            gap: 0.75rem; 
+        }
+        @media (min-width: 640px) { 
+            .client-details-grid {
+                 grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                 gap: 1rem;
+            }
+        }
+
+        .measurement-row { padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; margin-bottom: 1rem; background-color: #f9fafb; }
+         @media (min-width: 640px) { 
+            .measurement-row { padding: 1rem; }
+        }
+        .measurement-row .grid-container { display: grid; grid-template-columns: 1fr; gap: 0.75rem; }
+        .measurement-row .item-details-grid { 
+            display: grid;
+            grid-template-columns: 1fr; 
+            gap: 0.75rem;
+            margin-bottom: 0.75rem; 
+        }
+        @media (min-width: 640px) { 
+            .measurement-row .item-details-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+                gap: 1rem; margin-bottom: 1rem; 
+            }
+        }
+        .measurement-row .pricing-per-item-grid { 
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            padding-top: 0.5rem;
+            border-top: 1px dashed #ddd;
+        }
+        @media (min-width: 640px) {
+             .measurement-row .pricing-per-item-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 1rem;
+            }
+        }
+
+        .measurement-row .curtain-options-grid { 
+            display: grid;
+            grid-template-columns: 1fr; 
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        @media (min-width: 640px) { 
+            .measurement-row .curtain-options-grid {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 1rem; margin-bottom: 1rem;
+            }
+        }
+        .measurement-row .dimensions-grid { 
+            display: grid; 
+            grid-template-columns: 1fr; 
+            gap: 0.75rem; 
+        }
+         @media (min-width: 640px) { 
+            .measurement-row .dimensions-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr)); 
+                gap: 1rem; 
+            }
+        }
+
+        .measurement-row .input-group { margin-bottom: 0.5rem; }
+        .measurement-row .checkbox-group { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;}
+        .measurement-row .checkbox-group input[type="checkbox"] { width: 1rem; height: 1rem; }
+
+        hr.section-divider { margin-top: 1.5rem; margin-bottom: 1.5rem; border-top: 1px solid #d1d5db; }
+
+        .history-item {
+            padding: 0.75rem; margin-bottom: 0.75rem; background-color: #f9fafb; border: 1px solid #e5e7eb;
+            border-radius: 0.5rem; display: flex; 
+            flex-direction: column; 
+            align-items: stretch; 
+            gap: 0.5rem;
+        }
+         @media (min-width: 640px) { 
+            .history-item { 
+                flex-direction: row; 
+                justify-content: space-between; 
+                align-items: center; 
+                flex-wrap: wrap;
+                padding: 1rem;
+            }
+        }
+        .history-item-info { flex-grow: 1; }
+        .history-item-info p { margin: 0.1rem 0; font-size: 0.8rem; }
+         @media (min-width: 640px) { 
+            .history-item-info p { font-size: 0.9rem; }
+        }
+        .history-item-info .ref-name { font-weight: bold; color: #374151;}
+        .history-item-actions { 
+            display: flex; 
+            justify-content: flex-end; 
+            gap: 0.5rem; 
+            margin-top: 0.5rem; 
+        }
+         @media (min-width: 640px) { 
+            .history-item-actions { margin-top: 0; margin-left: auto; }
+        }
+        .history-item-actions button { margin-left: 0; } 
+         @media (min-width: 640px) { 
+             .history-item-actions button { margin-left: 0.5rem; }
+         }
+
+        #materialCodeList li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        #materialCodeList li:last-child { border-bottom: none; }
+        .material-code-text { flex-grow: 1; font-size: 0.875rem;}
+        .material-code-edit-input { display: none; flex-grow: 1; margin-right: 0.5rem;}
+
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 100; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.4); 
+            padding-top: 5%; 
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto; 
+            padding: 1rem; 
+            border: 1px solid #888;
+            width: 90%; 
+            max-width: 500px;
+            border-radius: 0.5rem;
+        }
+         @media (min-width: 640px) { 
+            .modal-content { padding: 1.5rem; width: 80%;}
+        }
+        .close-modal-btn {
+            color: #aaa;
+            float: right;
+            font-size: 24px; 
+            font-weight: bold;
+        }
+        .close-modal-btn:hover,
+        .close-modal-btn:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container main-container-group">
+        <h1 class="text-xl sm:text-2xl font-bold text-center mb-4 sm:mb-6 text-gray-700">Advanced Curtain Quotation Calculator</h1>
+
+        <button id="toggleMaterialManagerBtn" class="manage-material-btn w-full text-sm sm:text-base">Manage Material Codes</button>
+
+        <div class="client-details-section">
+            <h2 class="section-header">Client & Reference Information</h2>
+            <div class="input-group mb-3">
+                <label for="referenceName" class="input-label">Reference Name (for this quote)</label>
+                <input type="text" id="referenceName" class="client-info-input" placeholder="e.g., Smith Residence - Phase 1">
+            </div>
+            <div class="client-details-grid">
+                <div class="input-group">
+                    <label for="clientName" class="input-label">Client Name</label>
+                    <input type="text" id="clientName" class="client-info-input" placeholder="e.g., John Doe">
+                </div>
+                <div class="input-group">
+                    <label for="clientContact" class="input-label">Client Contact No.</label>
+                    <input type="tel" id="clientContact" class="client-info-input" placeholder="e.g., 012-3456789">
+                </div>
+                <div class="input-group">
+                    <label for="clientEmail" class="input-label">Client Email</label>
+                    <input type="email" id="clientEmail" class="client-info-input" placeholder="e.g., john.doe@example.com">
+                </div>
+                <div class="input-group">
+                    <label for="clientAddress" class="input-label">Client Address</label>
+                    <textarea id="clientAddress" class="client-info-input textarea" placeholder="e.g., 123 Jalan ABC, Taman XYZ..."></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <hr class="section-divider">
+        <h2 class="section-header mb-3">Curtain Measurements</h2>
+        <div id="measurementsContainer">
+            </div>
+
+        <button id="addMeasurementBtn" class="action-button mt-2 mb-4 text-sm sm:text-base">Add Another Measurement</button>
+        
+        <button id="calculateBtn" class="action-button w-full text-base sm:text-lg mb-2 mt-4">Calculate All Costs</button>
+
+        <div id="resultArea" class="result-area" style="display: none;">
+            <div class="result-area-header">
+                 <h2 class="text-lg sm:text-xl font-semibold text-gray-700">Cost Breakdown</h2>
+                 <div class="result-area-buttons">
+                    <button id="copyInfoBtn" class="copy-button">Copy All Info</button>
+                    <button id="saveCalculationBtn" class="secondary-button">Save Calculation</button>
+                 </div>
+            </div>
+            <div id="itemizedResultsContainer">
+                </div>
+            <p id="grandTotalCost" class="grand-total-text">Grand Total: RM0.00</p>
+        </div>
+    </div>
+
+    <div id="materialManagerModal" class="modal">
+        <div class="modal-content materials-management-section"> 
+            <span id="closeMaterialModalBtn" class="close-modal-btn">&times;</span>
+            <h2 class="section-header">Manage Material Codes</h2>
+            <div class="input-group mb-3">
+                <label for="newMaterialCode" class="input-label">Add New Material Code:</label>
+                <div class="flex gap-2">
+                    <input type="text" id="newMaterialCode" class="material-manage-input" placeholder="e.g., SILK-001">
+                    <button id="addMaterialCodeBtn" class="action-button text-sm">Add</button>
+                </div>
+            </div>
+            <h3 class="text-md sm:text-lg font-medium text-gray-700 mt-4 mb-2">Existing Material Codes:</h3>
+            <ul id="materialCodeList" class="bg-white rounded-md shadow max-h-60 overflow-y-auto">
+                </ul>
+            <datalist id="materialCodesDatalist"></datalist> 
+        </div>
+    </div>
+
+    <div class="history-container main-container-group">
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
+            <h2 class="section-header text-center sm:text-left mb-0 sm:mb-0">Calculation History</h2>
+            <button id="clearHistoryBtn" class="secondary-button bg-red-600 hover:bg-red-700 w-full sm:w-auto text-sm">Clear All History</button>
+        </div>
+        <div class="input-group mb-4"> <label for="searchHistoryInput" class="input-label sr-only">Search History</label> <input type="text" id="searchHistoryInput" class="search-input w-full" placeholder="Search by Ref Name, Client Name, Room...">
+        </div>
+        <div id="savedRecordsContainer">
+            <p class="text-gray-500 text-center">No saved records yet.</p>
+            </div>
+    </div>
+
+    <script>
+        let measurementIdCounter = 0;
+        let currentCalculationData = null; 
+        let itemDetailsForCopy = []; 
+
+        // DOM elements
+        const referenceNameInput = document.getElementById('referenceName');
+        const clientNameInput = document.getElementById('clientName');
+        const clientContactInput = document.getElementById('clientContact');
+        const clientEmailInput = document.getElementById('clientEmail');
+        const clientAddressInput = document.getElementById('clientAddress');
+        
+        const measurementsContainer = document.getElementById('measurementsContainer');
+        const addMeasurementBtn = document.getElementById('addMeasurementBtn');
+        const calculateBtn = document.getElementById('calculateBtn');
+        const resultArea = document.getElementById('resultArea');
+        const itemizedResultsContainer = document.getElementById('itemizedResultsContainer');
+        const grandTotalCostDisplay = document.getElementById('grandTotalCost');
+        const saveCalculationBtn = document.getElementById('saveCalculationBtn');
+        const copyInfoBtn = document.getElementById('copyInfoBtn'); 
+        const savedRecordsContainer = document.getElementById('savedRecordsContainer');
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+        const searchHistoryInput = document.getElementById('searchHistoryInput'); // Search input
+
+        // Material Management DOM
+        const toggleMaterialManagerBtn = document.getElementById('toggleMaterialManagerBtn');
+        const materialManagerModal = document.getElementById('materialManagerModal');
+        const closeMaterialModalBtn = document.getElementById('closeMaterialModalBtn');
+        const newMaterialCodeInput = document.getElementById('newMaterialCode');
+        const addMaterialCodeBtn = document.getElementById('addMaterialCodeBtn');
+        const materialCodeListUI = document.getElementById('materialCodeList');
+        const materialCodesDatalist = document.getElementById('materialCodesDatalist');
+
+        // Constants
+        const CONVERSIONS = { feet: 1, inches: 1 / 12, mm: 1 / 304.8 };
+        const MAX_HEIGHT_FT = 13;
+        const MIN_WIDTH_FT_FOR_COSTING = 4;
+        const HEIGHT_THRESHOLD_FOR_TIERED_PRICE = 10; 
+        const LOCAL_STORAGE_KEY_RECORDS = 'curtainCalculatorRecordsV9'; // V9 for day/night curtains
+        const LOCAL_STORAGE_KEY_MATERIALS = 'curtainMaterialCodeList';
+
+
+        // --- Material Code Management Functions ---
+        function getMaterialCodes() {
+            return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY_MATERIALS)) || [];
+        }
+
+        function saveMaterialCodes(codes) {
+            localStorage.setItem(LOCAL_STORAGE_KEY_MATERIALS, JSON.stringify(codes.sort())); 
+        }
+
+        function renderMaterialCodes() {
+            const codes = getMaterialCodes();
+            materialCodeListUI.innerHTML = '';
+            materialCodesDatalist.innerHTML = ''; 
+
+            if (codes.length === 0) {
+                materialCodeListUI.innerHTML = '<li class="text-gray-500 p-2 text-sm">No material codes defined yet.</li>';
+            }
+
+            codes.forEach((code, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span class="material-code-text">${code}</span>
+                    <input type="text" class="material-code-edit-input input-field" value="${code}" />
+                    <div>
+                        <button class="edit-material-btn" data-index="${index}">Edit</button>
+                        <button class="delete-material-btn" data-index="${index}">Del</button>
+                    </div>
+                `;
+                materialCodeListUI.appendChild(li);
+
+                const option = document.createElement('option');
+                option.value = code;
+                materialCodesDatalist.appendChild(option);
+
+                const editBtn = li.querySelector('.edit-material-btn');
+                const textSpan = li.querySelector('.material-code-text');
+                const editInput = li.querySelector('.material-code-edit-input');
+
+                editBtn.addEventListener('click', function() {
+                    if (editBtn.textContent === 'Edit') {
+                        textSpan.style.display = 'none';
+                        editInput.style.display = 'block';
+                        editInput.focus();
+                        editBtn.textContent = 'Save';
+                        editBtn.classList.remove('bg-blue-500', 'hover:bg-blue-600'); 
+                        editBtn.classList.add('bg-green-500', 'hover:bg-green-600'); 
+                    } else { 
+                        const newCodeValue = editInput.value.trim();
+                        if (newCodeValue && newCodeValue !== code) {
+                             if (codes.includes(newCodeValue)) {
+                                alert("This material code already exists.");
+                                return;
+                            }
+                            codes[index] = newCodeValue;
+                            saveMaterialCodes(codes);
+                            renderMaterialCodes(); 
+                        } else if (!newCodeValue) {
+                            alert("Material code cannot be empty.");
+                        } else { 
+                            textSpan.style.display = 'block';
+                            editInput.style.display = 'none';
+                            editBtn.textContent = 'Edit';
+                            editBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                            editBtn.classList.add('bg-blue-500', 'hover:bg-blue-600');
+                        }
+                    }
+                });
+            });
+
+            materialCodeListUI.querySelectorAll('.delete-material-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.dataset.index);
+                    const currentCodes = getMaterialCodes(); 
+                    if (confirm(`Are you sure you want to delete material code: "${currentCodes[index]}"?`)) {
+                        currentCodes.splice(index, 1);
+                        saveMaterialCodes(currentCodes);
+                        renderMaterialCodes();
+                    }
+                });
+            });
+        }
+
+        addMaterialCodeBtn.addEventListener('click', () => {
+            const newCode = newMaterialCodeInput.value.trim();
+            if (newCode) {
+                const codes = getMaterialCodes();
+                if (codes.includes(newCode)) {
+                    alert("This material code already exists.");
+                    return;
+                }
+                codes.push(newCode);
+                saveMaterialCodes(codes);
+                newMaterialCodeInput.value = '';
+                renderMaterialCodes();
+            } else {
+                alert("Please enter a material code.");
+            }
+        });
+
+        toggleMaterialManagerBtn.addEventListener('click', () => {
+            materialManagerModal.style.display = 'block';
+            renderMaterialCodes(); 
+        });
+        closeMaterialModalBtn.addEventListener('click', () => {
+            materialManagerModal.style.display = 'none';
+        });
+        window.addEventListener('click', (event) => { 
+            if (event.target == materialManagerModal) {
+                materialManagerModal.style.display = 'none';
+            }
+        });
+        // --- End of Material Code Management Functions ---
+
+        function createMeasurementRow(data = {}) {
+            measurementIdCounter++;
+            const rowId = `measurement-${measurementIdCounter}`;
+
+            const rowDiv = document.createElement('div');
+            rowDiv.classList.add('measurement-row');
+            rowDiv.setAttribute('id', rowId);
+            
+            const dayMaterialCodeHTML = `
+                <div class="input-group day-material-code-group" style="display: ${data.curtainType === 'dayAndNight' ? 'block' : 'none'};">
+                    <label for="dayMaterialCode-${rowId}" class="input-label">Day Curtain Material Code</label>
+                    <input type="text" id="dayMaterialCode-${rowId}" class="material-code-input" list="materialCodesDatalist" placeholder="e.g., SHEER-001" value="${data.dayMaterialCode || ''}">
+                </div>`;
+
+            rowDiv.innerHTML = `
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-lg font-semibold text-gray-600">Measurement #${measurementIdCounter}</h3>
+                    <button class="remove-button" data-row-id="${rowId}">Remove</button>
+                </div>
+                <div class="grid-container">
+                    <div class="item-details-grid"> 
+                        <div class="input-group">
+                            <label for="roomName-${rowId}" class="input-label">Room Name/Remark</label>
+                            <input type="text" id="roomName-${rowId}" class="room-name-input" placeholder="e.g., Living Hall" value="${data.roomName || ''}">
+                        </div>
+                        <div class="input-group">
+                            <label for="curtainType-${rowId}" class="input-label">Curtain Type</label>
+                            <select id="curtainType-${rowId}" class="curtain-detail-input select">
+                                <option value="nightOnly" ${data.curtainType === 'nightOnly' || !data.curtainType ? 'selected' : ''}>Night Curtain Only</option>
+                                <option value="dayAndNight" ${data.curtainType === 'dayAndNight' ? 'selected' : ''}>Day and Night Curtain</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="materialCode-${rowId}" class="input-label">Night Curtain Material Code</label>
+                            <input type="text" id="materialCode-${rowId}" class="material-code-input" list="materialCodesDatalist" placeholder="e.g., FAB-123" value="${data.materialCode || ''}">
+                        </div>
+                        ${dayMaterialCodeHTML}
+                    </div>
+                    <div class="curtain-options-grid"> 
+                        <div class="input-group">
+                            <label for="pleatType-${rowId}" class="input-label">Pleat Type</label>
+                            <select id="pleatType-${rowId}" class="curtain-detail-input select">
+                                <option value="">Select Pleat...</option>
+                                <option value="Pinch Pleat" ${data.pleatType === 'Pinch Pleat' ? 'selected' : ''}>Pinch Pleat</option>
+                                <option value="Eyelet" ${data.pleatType === 'Eyelet' ? 'selected' : ''}>Eyelet</option>
+                                <option value="Rod Pocket" ${data.pleatType === 'Rod Pocket' ? 'selected' : ''}>Rod Pocket</option>
+                                <option value="Goblet Pleat" ${data.pleatType === 'Goblet Pleat' ? 'selected' : ''}>Goblet Pleat</option>
+                                <option value="Box Pleat" ${data.pleatType === 'Box Pleat' ? 'selected' : ''}>Box Pleat</option>
+                                <option value="Ripple Fold" ${data.pleatType === 'Ripple Fold' ? 'selected' : ''}>Ripple Fold</option>
+                                <option value="Other" ${data.pleatType === 'Other' ? 'selected' : ''}>Other</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="liningType-${rowId}" class="input-label">Lining Type</label>
+                            <select id="liningType-${rowId}" class="curtain-detail-input select">
+                                <option value="None" ${data.liningType === 'None' || !data.liningType ? 'selected' : ''}>None</option>
+                                <option value="Standard" ${data.liningType === 'Standard' ? 'selected' : ''}>Standard</option>
+                                <option value="Blackout" ${data.liningType === 'Blackout' ? 'selected' : ''}>Blackout</option>
+                                <option value="Thermal" ${data.liningType === 'Thermal' ? 'selected' : ''}>Thermal</option>
+                                <option value="Interlining" ${data.liningType === 'Interlining' ? 'selected' : ''}>Interlining</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="trackRodType-${rowId}" class="input-label">Track/Rod Type</label>
+                            <select id="trackRodType-${rowId}" class="curtain-detail-input select">
+                                <option value="Track" ${data.trackRodType === 'Track' || !data.trackRodType ? 'selected' : ''}>Track</option>
+                                <option value="Rod" ${data.trackRodType === 'Rod' ? 'selected' : ''}>Rod</option>
+                                <option value="Motorized Track" ${data.trackRodType === 'Motorized Track' ? 'selected' : ''}>Motorized Track</option>
+                                <option value="Motorized Rod" ${data.trackRodType === 'Motorized Rod' ? 'selected' : ''}>Motorized Rod</option>
+                                <option value="Existing" ${data.trackRodType === 'Existing' ? 'selected' : ''}>Existing</option>
+                            </select>
+                        </div>
+                         <div class="input-group">
+                            <label for="fullness-${rowId}" class="input-label">Fullness</label>
+                            <input type="text" id="fullness-${rowId}" class="curtain-detail-input" placeholder="e.g., 2x, 2.5x" value="${data.fullness || ''}">
+                        </div>
+                    </div>
+                    <div class="dimensions-grid">
+                        <div class="input-group">
+                            <label for="width-${rowId}" class="input-label">Width</label>
+                            <div class="input-field-container">
+                                <input type="number" id="width-${rowId}" class="input-field width-input" placeholder="e.g., 120" value="${data.widthValue || ''}">
+                                <select id="widthUnit-${rowId}" class="unit-select width-unit-select">
+                                    <option value="inches" ${data.widthUnit === 'inches' || !data.widthUnit ? 'selected' : ''}>inches</option>
+                                    <option value="feet" ${data.widthUnit === 'feet' ? 'selected' : ''}>feet</option>
+                                    <option value="mm" ${data.widthUnit === 'mm' ? 'selected' : ''}>mm</option>
+                                </select>
+                            </div>
+                            <p id="widthError-${rowId}" class="error-message"></p>
+                        </div>
+                        <div class="input-group">
+                            <label for="height-${rowId}" class="input-label">Height (Max 13ft)</label>
+                            <div class="input-field-container">
+                                <input type="number" id="height-${rowId}" class="input-field height-input" placeholder="e.g., 96" value="${data.heightValue || ''}">
+                                <select id="heightUnit-${rowId}" class="unit-select height-unit-select">
+                                   <option value="inches" ${data.heightUnit === 'inches' || !data.heightUnit ? 'selected' : ''}>inches</option>
+                                   <option value="feet" ${data.heightUnit === 'feet' ? 'selected' : ''}>feet</option>
+                                   <option value="mm" ${data.heightUnit === 'mm' ? 'selected' : ''}>mm</option>
+                                </select>
+                            </div>
+                            <p id="heightError-${rowId}" class="error-message"></p>
+                        </div>
+                    </div>
+                    <div class="pricing-per-item-grid"> <div class="input-group">
+                            <label for="itemPricePerFoot-${rowId}" class="input-label">Price/ft (H &lt;= 10ft) (RM)</label>
+                            <input type="number" id="itemPricePerFoot-${rowId}" class="price-input" placeholder="e.g., 15" value="${data.itemPricePerFoot || ''}">
+                            <p id="itemPriceError-${rowId}" class="error-message"></p>
+                        </div>
+                        <div class="input-group">
+                            <label for="itemPricePerFootOver10ft-${rowId}" class="input-label">Price/ft (H > 10ft) (RM)</label>
+                            <input type="number" id="itemPricePerFootOver10ft-${rowId}" class="price-input" placeholder="e.g., 20" value="${data.itemPricePerFootOver10ft || ''}">
+                            <p id="itemPriceOver10ftError-${rowId}" class="error-message"></p>
+                        </div>
+                    </div>
+                    <div class="curtain-options-grid"> 
+                        <div class="input-group checkbox-group">
+                            <input type="checkbox" id="tiebacks-${rowId}" class="curtain-detail-input" ${data.tiebacks ? 'checked' : ''}>
+                            <label for="tiebacks-${rowId}" class="input-label mb-0">Tiebacks Required</label>
+                        </div>
+                        <div class="input-group checkbox-group">
+                            <input type="checkbox" id="installation-${rowId}" class="curtain-detail-input" ${data.installation ? 'checked' : ''}>
+                            <label for="installation-${rowId}" class="input-label mb-0">Installation Required</label>
+                        </div>
+                    </div>
+                     <div class="input-group mt-2"> 
+                        <label for="itemNotes-${rowId}" class="input-label">Item Specific Notes</label>
+                        <textarea id="itemNotes-${rowId}" class="curtain-detail-input textarea" placeholder="e.g., Special instructions for this item...">${data.itemNotes || ''}</textarea>
+                    </div>
+                </div>
+            `;
+            measurementsContainer.appendChild(rowDiv);
+
+            const curtainTypeSelect = rowDiv.querySelector(`#curtainType-${rowId}`);
+            const dayMaterialCodeGroup = rowDiv.querySelector('.day-material-code-group');
+            const dayMaterialCodeInput = rowDiv.querySelector(`#dayMaterialCode-${rowId}`);
+
+            curtainTypeSelect.addEventListener('change', function() {
+                if (this.value === 'dayAndNight') {
+                    dayMaterialCodeGroup.style.display = 'block';
+                } else {
+                    dayMaterialCodeGroup.style.display = 'none';
+                    if(dayMaterialCodeInput) dayMaterialCodeInput.value = ''; // Clear value when hidden
+                }
+                resultArea.style.display = 'none'; // Invalidate results on change
+                currentCalculationData = null;
+            });
+
+
+            rowDiv.querySelector('.remove-button').addEventListener('click', function() {
+                document.getElementById(this.dataset.rowId).remove();
+                if (measurementsContainer.children.length === 0) {
+                    measurementIdCounter = 0; 
+                }
+                renumberMeasurementHeaders();
+                resultArea.style.display = 'none';
+                currentCalculationData = null;
+            });
+
+            const inputsInRow = rowDiv.querySelectorAll('.input-field, .room-name-input, .material-code-input, .curtain-detail-input, .price-input');
+            inputsInRow.forEach(input => {
+                input.addEventListener('input', () => {
+                    if (input.classList.contains('input-field')) { 
+                        const errorPId = input.id.replace('width-', 'widthError-').replace('height-', 'heightError-');
+                        if(document.getElementById(errorPId)) document.getElementById(errorPId).textContent = '';
+                    } else if (input.classList.contains('price-input')) {
+                        const errorPId = input.id.replace('itemPricePerFoot-', 'itemPriceError-').replace('itemPricePerFootOver10ft-', 'itemPriceOver10ftError-');
+                         if(document.getElementById(errorPId)) document.getElementById(errorPId).textContent = '';
+                    }
+                    resultArea.style.display = 'none';
+                    currentCalculationData = null;
+                });
+            });
+        }
+        
+        function renumberMeasurementHeaders() {
+            const rows = measurementsContainer.querySelectorAll('.measurement-row');
+            rows.forEach((row, index) => {
+                row.querySelector('h3').textContent = `Measurement #${index + 1}`;
+            });
+        }
+
+        function convertToFeet(value, unit) { return value * (CONVERSIONS[unit] || 1); }
+        function getRecords() { return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY_RECORDS)) || []; }
+        function saveRecords(records) { localStorage.setItem(LOCAL_STORAGE_KEY_RECORDS, JSON.stringify(records)); }
+
+        function displaySavedRecords(searchTerm = '') { // Added searchTerm parameter
+            const records = getRecords();
+            savedRecordsContainer.innerHTML = ''; 
+            
+            const lowerSearchTerm = searchTerm.toLowerCase();
+            const filteredRecords = records.filter(record => {
+                if (!searchTerm) return true; // Show all if no search term
+                const refMatch = record.referenceName && record.referenceName.toLowerCase().includes(lowerSearchTerm);
+                const clientMatch = record.clientName && record.clientName.toLowerCase().includes(lowerSearchTerm);
+                const roomMatch = record.measurements.some(m => m.roomName && m.roomName.toLowerCase().includes(lowerSearchTerm));
+                const materialMatch = record.measurements.some(m => m.materialCode && m.materialCode.toLowerCase().includes(lowerSearchTerm));
+                const dayMaterialMatch = record.measurements.some(m => m.dayMaterialCode && m.dayMaterialCode.toLowerCase().includes(lowerSearchTerm));
+                return refMatch || clientMatch || roomMatch || materialMatch || dayMaterialMatch;
+            });
+
+
+            if (filteredRecords.length === 0) {
+                savedRecordsContainer.innerHTML = `<p class="text-gray-500 text-center">${searchTerm ? 'No records match your search.' : 'No saved records yet.'}</p>`;
+                return;
+            }
+
+            filteredRecords.forEach((record) => { // Iterate over filtered records
+                // Find original index for load/delete if needed, or pass the record object itself
+                // For simplicity, we'll find the original index. This is less efficient if list is huge.
+                const originalIndex = records.findIndex(r => r.timestamp === record.timestamp && r.referenceName === record.referenceName);
+
+                const recordDate = new Date(record.timestamp).toLocaleString();
+                const itemEl = document.createElement('div');
+                itemEl.classList.add('history-item');
+                itemEl.innerHTML = `
+                    <div class="history-item-info">
+                        <p><strong class="ref-name">${record.referenceName || 'Unnamed Record'}</strong></p>
+                        <p>Client: ${record.clientName || 'N/A'} (${recordDate})</p>
+                        <p>Items: ${record.measurements.length}, Total: RM${record.grandTotal.toFixed(2)}</p>
+                    </div>
+                    <div class="history-item-actions">
+                        <button class="secondary-button load-record-btn" data-record-index="${originalIndex}">Load</button>
+                        <button class="remove-button delete-record-btn" data-record-index="${originalIndex}">Delete</button>
+                    </div>
+                `;
+                savedRecordsContainer.appendChild(itemEl);
+            });
+
+            document.querySelectorAll('.load-record-btn').forEach(btn => {
+                btn.addEventListener('click', function() { loadRecord(parseInt(this.dataset.recordIndex)); });
+            });
+            document.querySelectorAll('.delete-record-btn').forEach(btn => {
+                btn.addEventListener('click', function() { deleteRecord(parseInt(this.dataset.recordIndex)); });
+            });
+        }
+        
+        searchHistoryInput.addEventListener('input', function() {
+            displaySavedRecords(this.value);
+        });
+
+
+        function loadRecord(index) {
+            const records = getRecords();
+            const record = records[index]; 
+            if (!record) return;
+
+            referenceNameInput.value = record.referenceName || '';
+            clientNameInput.value = record.clientName || '';
+            clientContactInput.value = record.clientContact || '';
+            clientEmailInput.value = record.clientEmail || '';
+            clientAddressInput.value = record.clientAddress || '';
+            
+            measurementsContainer.innerHTML = '';
+            measurementIdCounter = 0; 
+            record.measurements.forEach(m => createMeasurementRow(m)); 
+            
+            resultArea.style.display = 'none'; 
+            currentCalculationData = null;
+            alert('Record loaded. Adjust if needed and click "Calculate All Costs".');
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+        }
+
+        function deleteRecord(index) {
+            if (!confirm('Are you sure you want to delete this record?')) return;
+            let records = getRecords();
+            records.splice(index, 1); 
+            saveRecords(records);
+            displaySavedRecords(searchHistoryInput.value); // Re-display with current search term
+        }
+
+        clearHistoryBtn.addEventListener('click', () => {
+            if (!confirm('Are you sure you want to delete ALL saved records? This cannot be undone.')) return;
+            localStorage.removeItem(LOCAL_STORAGE_KEY_RECORDS);
+            displaySavedRecords();
+        });
+
+        saveCalculationBtn.addEventListener('click', () => {
+            if (!currentCalculationData) {
+                alert("Please calculate costs first or ensure the calculation was successful.");
+                return;
+            }
+            if (!confirm("Do you want to save this calculation to history?")) return;
+
+            const records = getRecords();
+            records.unshift({ 
+                ...currentCalculationData, 
+                timestamp: new Date().toISOString()
+            });
+            saveRecords(records);
+            displaySavedRecords(searchHistoryInput.value); // Re-display with current search term
+            alert("Calculation saved!");
+        });
+
+        copyInfoBtn.addEventListener('click', function() {
+            if (!currentCalculationData) {
+                alert("Please calculate costs first to generate information to copy.");
+                return;
+            }
+
+            let reportText = `QUOTATION DETAILS\n`;
+            reportText += `Date: ${new Date().toLocaleString()}\n`;
+            reportText += `Reference: ${currentCalculationData.referenceName || 'N/A'}\n\n`;
+
+            reportText += `CLIENT INFORMATION:\n`;
+            reportText += `Name: ${currentCalculationData.clientName || 'N/A'}\n`;
+            reportText += `Contact: ${currentCalculationData.clientContact || 'N/A'}\n`;
+            reportText += `Email: ${currentCalculationData.clientEmail || 'N/A'}\n`;
+            reportText += `Address: ${currentCalculationData.clientAddress || 'N/A'}\n\n`;
+            
+            reportText += `--- MEASUREMENTS & COSTS ---\n\n`;
+
+            itemDetailsForCopy.forEach((itemDetail) => { 
+                reportText += itemDetail; 
+            });
+
+            reportText += `-----------------------------\n`;
+            reportText += `GRAND TOTAL: RM${currentCalculationData.grandTotal.toFixed(2)}\n`;
+
+            navigator.clipboard.writeText(reportText).then(() => {
+                const originalText = copyInfoBtn.textContent;
+                copyInfoBtn.textContent = 'Copied!';
+                setTimeout(() => {
+                    copyInfoBtn.textContent = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+                alert('Failed to copy information. Please try again or copy manually.');
+            });
+        });
+
+        addMeasurementBtn.addEventListener('click', () => {
+            createMeasurementRow();
+            resultArea.style.display = 'none'; 
+            currentCalculationData = null;
+        });
+        
+        const allClientInputs = [referenceNameInput, clientNameInput, clientContactInput, clientEmailInput, clientAddressInput];
+        allClientInputs.forEach(input => {
+            input.addEventListener('input', () => {
+                resultArea.style.display = 'none';
+                currentCalculationData = null;
+            });
+        });
+
+        calculateBtn.addEventListener('click', () => {
+            itemizedResultsContainer.innerHTML = ''; 
+            itemDetailsForCopy = []; 
+            let grandTotalCost = 0;
+            let overallIsValid = true;
+            currentCalculationData = null; 
+
+            const collectedMeasurements = []; 
+            
+            const clientData = {
+                referenceName: referenceNameInput.value.trim(),
+                clientName: clientNameInput.value.trim(),
+                clientContact: clientContactInput.value.trim(),
+                clientEmail: clientEmailInput.value.trim(),
+                clientAddress: clientAddressInput.value.trim()
+            };
+            
+            const rows = measurementsContainer.querySelectorAll('.measurement-row');
+            if (rows.length === 0) {
+                alert("Please add at least one measurement.");
+                resultArea.style.display = 'none';
+                return;
+            }
+
+            rows.forEach((row, index) => {
+                const rowId = row.id;
+                
+                const roomNameInputEl = document.getElementById(`roomName-${rowId}`);
+                const curtainTypeSelectEl = document.getElementById(`curtainType-${rowId}`); // New
+                const materialCodeInputEl = document.getElementById(`materialCode-${rowId}`); 
+                const dayMaterialCodeInputEl = document.getElementById(`dayMaterialCode-${rowId}`); // New
+                const pleatTypeSelectEl = document.getElementById(`pleatType-${rowId}`);
+                const liningTypeSelectEl = document.getElementById(`liningType-${rowId}`);
+                const trackRodTypeSelectEl = document.getElementById(`trackRodType-${rowId}`);
+                const fullnessInputEl = document.getElementById(`fullness-${rowId}`);
+                const tiebacksCheckboxEl = document.getElementById(`tiebacks-${rowId}`);
+                const installationCheckboxEl = document.getElementById(`installation-${rowId}`);
+                const itemNotesTextareaEl = document.getElementById(`itemNotes-${rowId}`);
+
+                const itemPricePerFootInputEl = document.getElementById(`itemPricePerFoot-${rowId}`);
+                const itemPricePerFootOver10ftInputEl = document.getElementById(`itemPricePerFootOver10ft-${rowId}`);
+                const itemPriceErrorEl = document.getElementById(`itemPriceError-${rowId}`);
+                const itemPriceOver10ftErrorEl = document.getElementById(`itemPriceOver10ftError-${rowId}`);
+                itemPriceErrorEl.textContent = ''; 
+                itemPriceOver10ftErrorEl.textContent = '';
+
+                const widthInputEl = document.getElementById(`width-${rowId}`);
+                const widthUnitSelectEl = document.getElementById(`widthUnit-${rowId}`);
+                const heightInputEl = document.getElementById(`height-${rowId}`);
+                const heightUnitSelectEl = document.getElementById(`heightUnit-${rowId}`);
+                const widthErrorEl = document.getElementById(`widthError-${rowId}`);
+                const heightErrorEl = document.getElementById(`heightError-${rowId}`);
+
+                widthErrorEl.textContent = '';
+                heightErrorEl.textContent = '';
+
+                const roomName = roomNameInputEl.value.trim();
+                const curtainType = curtainTypeSelectEl.value; // New
+                const materialCode = materialCodeInputEl.value.trim(); 
+                const dayMaterialCode = (curtainType === 'dayAndNight' && dayMaterialCodeInputEl) ? dayMaterialCodeInputEl.value.trim() : ''; // New
+                const pleatType = pleatTypeSelectEl.value;
+                const liningType = liningTypeSelectEl.value;
+                const trackRodType = trackRodTypeSelectEl.value;
+                const fullness = fullnessInputEl.value.trim();
+                const tiebacks = tiebacksCheckboxEl.checked;
+                const installation = installationCheckboxEl.checked;
+                const itemNotes = itemNotesTextareaEl.value.trim();
+
+                const itemPricePerFoot = parseFloat(itemPricePerFootInputEl.value);
+                let itemPricePerFootOver10ft = parseFloat(itemPricePerFootOver10ftInputEl.value);
+
+                const widthValue = parseFloat(widthInputEl.value);
+                const heightValue = parseFloat(heightInputEl.value);
+                const selectedWidthUnit = widthUnitSelectEl.value;
+                const selectedHeightUnit = heightUnitSelectEl.value;
+
+                if (isNaN(itemPricePerFoot) || itemPricePerFoot <= 0) {
+                    itemPriceErrorEl.textContent = 'Std price required.';
+                    overallIsValid = false; 
+                }
+                if (itemPricePerFootOver10ftInputEl.value && (isNaN(itemPricePerFootOver10ft) || itemPricePerFootOver10ft <= 0)) {
+                    itemPriceOver10ftErrorEl.textContent = '>10ft price required if specified.';
+                    overallIsValid = false;
+                }
+                const effectiveItemPriceOver10ft = (isNaN(itemPricePerFootOver10ft) || itemPricePerFootOver10ft <=0) ? itemPricePerFoot : itemPricePerFootOver10ft;
+
+                collectedMeasurements.push({ 
+                    roomName, curtainType, materialCode, dayMaterialCode, 
+                    pleatType, liningType, trackRodType, fullness, tiebacks, installation, itemNotes,
+                    widthValue, heightValue, 
+                    widthUnit: selectedWidthUnit, heightUnit: selectedHeightUnit,
+                    itemPricePerFoot, itemPricePerFootOver10ft 
+                });
+
+                let rowIsValid = true;
+                if (isNaN(widthValue) || widthValue <= 0) {
+                    widthErrorEl.textContent = 'Valid width required.'; rowIsValid = false; overallIsValid = false;
+                }
+                if (isNaN(heightValue) || heightValue <= 0) {
+                    heightErrorEl.textContent = 'Valid height required.'; rowIsValid = false; overallIsValid = false;
+                }
+                
+                let costForRow = 0;
+                let detailsMsg = "";
+                let heightRemarkText = ""; 
+                let priceUsedForThisItem = itemPricePerFoot; 
+                let initialWidthInFeet = 0, heightInFeet = 0, finalWidthForCost = 0, roundedWidthInFeet = 0;
+
+                if (rowIsValid && !isNaN(itemPricePerFoot) && itemPricePerFoot > 0) { 
+                    initialWidthInFeet = convertToFeet(widthValue, selectedWidthUnit);
+                    heightInFeet = convertToFeet(heightValue, selectedHeightUnit);
+
+                    if (heightInFeet > MAX_HEIGHT_FT) {
+                        heightErrorEl.textContent = `Max height ${MAX_HEIGHT_FT}ft. Entered: ${heightInFeet.toFixed(2)}ft.`;
+                        rowIsValid = false; overallIsValid = false; 
+                    }
+
+                    if (rowIsValid) { 
+                        roundedWidthInFeet = Math.ceil(initialWidthInFeet * 2) / 2;
+                        finalWidthForCost = roundedWidthInFeet;
+                        detailsMsg = `Orig. W: ${initialWidthInFeet.toFixed(2)}ft, Rounded W: ${roundedWidthInFeet.toFixed(2)}ft.`;
+
+                        if (roundedWidthInFeet < MIN_WIDTH_FT_FOR_COSTING) {
+                            finalWidthForCost = MIN_WIDTH_FT_FOR_COSTING;
+                            detailsMsg += ` Min. W Costing: ${MIN_WIDTH_FT_FOR_COSTING}ft.`;
+                        } else {
+                            detailsMsg += ` Costing W: ${finalWidthForCost.toFixed(2)}ft.`;
+                        }
+                        
+                        if (heightInFeet > HEIGHT_THRESHOLD_FOR_TIERED_PRICE) {
+                            priceUsedForThisItem = effectiveItemPriceOver10ft; 
+                            detailsMsg += ` (Using >${HEIGHT_THRESHOLD_FOR_TIERED_PRICE}ft price: RM${priceUsedForThisItem.toFixed(2)})`;
+                        } else {
+                             detailsMsg += ` (Using std price: RM${priceUsedForThisItem.toFixed(2)})`;
+                        }
+
+                        if (!isNaN(priceUsedForThisItem) && priceUsedForThisItem > 0) { 
+                           costForRow = finalWidthForCost * priceUsedForThisItem;
+                           // If day and night, and day material has a cost (future enhancement, for now just one cost)
+                           // For now, the price is for the night curtain or the combined set.
+                           grandTotalCost += costForRow;
+                        } else {
+                            costForRow = NaN; 
+                            overallIsValid = false; 
+                        }
+
+                        if (heightInFeet > HEIGHT_THRESHOLD_FOR_TIERED_PRICE && heightInFeet <= MAX_HEIGHT_FT) {
+                            heightRemarkText = `Remark: Height (${heightInFeet.toFixed(2)}ft) is over ${HEIGHT_THRESHOLD_FOR_TIERED_PRICE}ft.`;
+                        }
+                    }
+                } else if (rowIsValid && (isNaN(itemPricePerFoot) || itemPricePerFoot <= 0)) { 
+                    overallIsValid = false; 
+                }
+                
+                let itemCopyText = `Item ${index + 1}: ${roomName || 'N/A'}\n`;
+                itemCopyText += `  - Curtain Type: ${curtainType === 'dayAndNight' ? 'Day and Night' : 'Night Curtain Only'}\n`;
+                itemCopyText += `  - Night Curtain Material: ${materialCode || 'N/A'}\n`; 
+                if(curtainType === 'dayAndNight' && dayMaterialCode) {
+                    itemCopyText += `  - Day Curtain Material: ${dayMaterialCode}\n`;
+                }
+                itemCopyText += `  - Pleat Type: ${pleatType || 'N/A'}\n`;
+                itemCopyText += `  - Lining: ${liningType || 'N/A'}\n`;
+                itemCopyText += `  - Track/Rod: ${trackRodType || 'N/A'}\n`;
+                itemCopyText += `  - Fullness: ${fullness || 'N/A'}\n`;
+                itemCopyText += `  - Tiebacks: ${tiebacks ? 'Yes' : 'No'}\n`;
+                itemCopyText += `  - Installation: ${installation ? 'Yes' : 'No'}\n`;
+                if(itemNotes) itemCopyText += `  - Item Notes: ${itemNotes}\n`;
+                itemCopyText += `  - Original Dimensions: ${widthValue || 'N/A'} ${selectedWidthUnit} (W) x ${heightValue || 'N/A'} ${selectedHeightUnit} (H)\n`;
+                itemCopyText += `  - Item Std Price/ft: RM${isNaN(itemPricePerFoot) ? 'N/A' : itemPricePerFoot.toFixed(2)}\n`;
+                if(itemPricePerFootOver10ftInputEl.value) itemCopyText += `  - Item >10ft Price/ft: RM${isNaN(itemPricePerFootOver10ft) ? 'N/A' : itemPricePerFootOver10ft.toFixed(2)}\n`;
+
+                if(rowIsValid && !isNaN(priceUsedForThisItem) && priceUsedForThisItem > 0) {
+                    itemCopyText += `  - Processed Width for Costing: ${finalWidthForCost.toFixed(2)} ft (Original: ${initialWidthInFeet.toFixed(2)}ft, Rounded: ${roundedWidthInFeet.toFixed(2)}ft)\n`;
+                    itemCopyText += `  - Height in Feet: ${heightInFeet.toFixed(2)} ft\n`;
+                    itemCopyText += `  - Price Tier Applied: RM${priceUsedForThisItem.toFixed(2)} /ft\n`;
+                    itemCopyText += `  - Cost for this item: RM${isNaN(costForRow) ? 'N/A' : costForRow.toFixed(2)}\n`;
+                    if (heightRemarkText) itemCopyText += `  - ${heightRemarkText}\n`;
+                } else {
+                    itemCopyText += `  - Calculation Error: Please check inputs/prices for this item.\n`;
+                }
+                itemCopyText += `\n`;
+                itemDetailsForCopy.push(itemCopyText);
+
+                let specsHTML = `<p class="curtain-specs-display">Type: ${curtainType === 'dayAndNight' ? 'Day & Night' : 'Night Only'}`;
+                if(curtainType === 'dayAndNight' && dayMaterialCode) {
+                    specsHTML += `, Day Material: ${dayMaterialCode}`;
+                }
+                specsHTML += `</p>`;
+                specsHTML += `<p class="curtain-specs-display">Pleat: ${pleatType || 'N/A'}, Lining: ${liningType || 'N/A'}, Track/Rod: ${trackRodType || 'N/A'}</p>`;
+                specsHTML += `<p class="curtain-specs-display">Fullness: ${fullness || 'N/A'}, Tiebacks: ${tiebacks ? 'Yes' : 'No'}, Installation: ${installation ? 'Yes' : 'No'}</p>`;
+                if(itemNotes) specsHTML += `<p class="curtain-specs-display">Notes: ${itemNotes}</p>`;
+
+                const itemDiv = document.createElement('div');
+                itemDiv.classList.add('item-result');
+                const visualIndex = row.querySelector('h3').textContent.split('#')[1] || (index + 1);
+                itemDiv.innerHTML = `
+                    <h4 class="font-semibold text-md text-indigo-700">Measurement #${visualIndex}${roomName ? ` (${roomName})` : ''}</h4>
+                    ${materialCode ? `<p class="material-code-display">Night Material: ${materialCode}</p>` : ''} 
+                    ${specsHTML}
+                    <p class="text-sm text-gray-600 mt-2">${detailsMsg}</p>
+                    ${heightRemarkText ? `<p class="remark-text text-sm">${heightRemarkText}</p>` : ''}
+                    <p class="text-sm font-medium text-gray-800">Cost for this item: RM${isNaN(costForRow) ? 'N/A (check prices/inputs)' : costForRow.toFixed(2)}</p>
+                    ${!rowIsValid || isNaN(costForRow) ? '<p class="error-message text-sm">This item has errors or invalid price.</p>' : ''}
+                `;
+                itemizedResultsContainer.appendChild(itemDiv);
+            });
+
+            if (overallIsValid) {
+                resultArea.style.display = 'block';
+                grandTotalCostDisplay.textContent = `Grand Total: RM${grandTotalCost.toFixed(2)}`;
+                currentCalculationData = {
+                    ...clientData, 
+                    measurements: collectedMeasurements, 
+                    grandTotal: grandTotalCost
+                };
+            } else {
+                resultArea.style.display = 'block'; 
+                grandTotalCostDisplay.textContent = 'Grand Total: N/A (Fix errors)';
+                currentCalculationData = null;
+            }
+        });
+
+        // Initialize
+        renderMaterialCodes(); 
+        createMeasurementRow(); 
+        displaySavedRecords(); 
+        
+    </script>
+</body>
+</html>
